@@ -1,0 +1,20 @@
+# Changelog
+
+All notable changes to `PkRouter` will be documented in this file.
+
+## NEXT - YYYY-MM-DD
+
+### Added
+- Nothing
+
+### Deprecated
+- Nothing
+
+### Fixed
+- Nothing
+
+### Removed
+- Nothing
+
+### Security
+- Nothing

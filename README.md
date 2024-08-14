@@ -1,5 +1,2 @@
 # PkRouter
-# PkRouter
-# PkRouter
-# PkRouter
-# PkRouter
+An easy PHP router for JSON APIs
