@@ -15,11 +15,19 @@ class PkRoute {
 
   protected static array $matchOptions = [
     'i' => "(\d+)", // Integer only
+    'f' => "(\d+(\.\d+)?)", // Floating point number
     'a' => "([a-zA-Z]+)", // Alpha only
     'n' => "([a-zA-Z0-9]+)", // AlphaNumeric
-    'd' => "(\d{4}-\d{2}-\d{2})", // Date in YYYY-MM-DD format
-    's' => "([a-zA-Z0-9\-._~]+)", // String all URL safe characters
-    //'w' => "(.*?)", //! Wildcard -- probably unwise.
+    's' => "([a-zA-Z0-9\-._~!$&'()*+,;=:@]+)", // String with all URL-safe characters
+    'e' => "([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})", // Email
+    'b' => "(true|false|1|0)", // Boolean
+    'ip' => "(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})", // IPv4 address
+    'ipv6' => "([a-fA-F0-9:]+)", // IPv6 address
+    'uu' => "([a-fA-F0-9\-]{36})", // UUID
+    'uu4' => "([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12})", // UUID v4
+    'ymd' => "(\d{4}-\d{2}-\d{2})", // Date in YYYY-MM-DD format
+    'hms' => "([0-1][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])", // Time in HH:MM:SS format
+    "*" => "(.*)" // Wildcard
   ];
 
   final public function __construct($route) {
