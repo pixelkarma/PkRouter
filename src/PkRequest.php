@@ -14,9 +14,9 @@ class PkRequest {
   protected bool $secure = false;
   protected array $headers = [];
   protected string $url = '';
-  protected mixed $body = [];
+  protected array $body = [];
   protected array $files = [];
-  protected string $rawBody = "";
+  protected mixed $rawBody = "";
   protected string $host = "";
   protected string $path = "";
   protected array $query = [];
@@ -31,7 +31,6 @@ class PkRequest {
 
 
   final public function __construct(string $url = null) {
-
     $this->rawBody = file_get_contents("php://input");
     $this->contentType = strtolower($_SERVER['CONTENT_TYPE'] ?? '');
     $this->cookies = $_COOKIE ?? [];
@@ -106,14 +105,15 @@ class PkRequest {
   final protected function initializeUrl(string $url = null) {
     $this->url = $url !== null ? $url : $this->getCurrentUrl();
     $parsedUrl = parse_url($this->url);
-    $this->scheme = $parsedUrl['scheme'] ?? null;
-    $this->host = $parsedUrl['host'] ?? "";
-    $this->port = $parsedUrl['port'] ?? null;
-    $this->user = $parsedUrl['user'] ?? null;
-    $this->pass = $parsedUrl['pass'] ?? null;
-    $this->path = $parsedUrl['path'] ?? null;
-    $this->query = $parsedUrl['query'] ?? [];
-    $this->fragment = $parsedUrl['fragment'] ?? null;
+
+    if (!empty($parsedUrl['scheme'])) $this->scheme = $parsedUrl['scheme'];
+    if (!empty($parsedUrl['host'])) $this->host = $parsedUrl['host'];
+    if (!empty($parsedUrl['port'])) $this->port = $parsedUrl['port'];
+    if (!empty($parsedUrl['user'])) $this->user = $parsedUrl['user'];
+    if (!empty($parsedUrl['pass'])) $this->pass = $parsedUrl['pass'];
+    if (!empty($parsedUrl['path'])) $this->path = $parsedUrl['path'];
+    if (!empty($parsedUrl['query'])) parse_str($parsedUrl['query'], $this->query);
+    if (!empty($parsedUrl['fragment'])) $this->fragment = $parsedUrl['fragment'];
   }
 
   final protected function initializeHeaders() {
@@ -126,20 +126,19 @@ class PkRequest {
   }
 
   final protected function initializeBody() {
-    try {
-      if (strpos($this->contentType, self::CONTENT_TYPE_JSON) !== false) {
-        $this->body = json_decode($this->rawBody, true, JSON_THROW_ON_ERROR);
-      } elseif (strpos($this->contentType, self::CONTENT_TYPE_FORM) !== false) {
-        parse_str($this->rawBody, $this->body);
-      } elseif (strpos($this->contentType, self::CONTENT_TYPE_MULTIPART) !== false) {
-        $this->body = $_POST;
-        $this->files = $_FILES;
-      } else {
-        $this->body = $this->rawBody;
+    if (strpos($this->contentType, self::CONTENT_TYPE_JSON) !== false) {
+      $json =  json_decode($this->rawBody, true, JSON_THROW_ON_ERROR);
+      if (!is_array($json)) {
+        throw new \Exception("Body content is not valid JSON", 400);
       }
-    } catch (\JsonException $e) {
-      error_log('PkRoute JSON decoding error: ' . $e->getMessage());
-      $this->body = null;
+      $this->body = $json;
+    } elseif (strpos($this->contentType, self::CONTENT_TYPE_FORM) !== false) {
+      parse_str($this->rawBody, $this->body);
+    } elseif (strpos($this->contentType, self::CONTENT_TYPE_MULTIPART) !== false) {
+      $this->body = $_POST;
+      $this->files = $_FILES;
+    } else {
+      $this->body = [];
     }
   }
 
