@@ -48,8 +48,8 @@ class PkRoute {
     if (method_exists($this, 'setup')) $this->setup();
   }
 
-  final public static function addMatchPattern(string $letter, string $pattern) {
-    self::$matchOptions[$letter] = $pattern;
+  final public static function addMatchPattern(string $key, string $pattern) {
+    self::$matchOptions[$key] = $pattern;
   }
 
   final public function getAddons() {
