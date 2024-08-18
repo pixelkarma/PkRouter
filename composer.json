@@ -1,5 +1,6 @@
 {
   "name": "pixelkarma/pkrouter",
+  "version": "1.0.0",
   "type": "library",
   "description": "An easy PHP router for JSON APIs",
   "keywords": [
@@ -24,7 +25,7 @@
   "require-dev": {},
   "autoload": {
     "psr-4": {
-      "Pixelkarma\\PkRouter\\": "src"
+      "Pixelkarma\\PkRouter\\": "src/"
     }
   },
   "autoload-dev": {
