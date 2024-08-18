@@ -26,7 +26,7 @@ class PkResponse {
     $this->headers = [];
   }
 
-  final public function send(array $payload, int $code = null): bool {
+  final public function sendJson(array $payload, int $code = null): bool {
     try {
       if ($code !== null) $this->setCode($code);
 
@@ -39,7 +39,7 @@ class PkResponse {
       print $payload;
       return true;
     } catch (\Throwable $e) {
-      error_log("PkRoute sendRaw error: " . $e->getMessage());
+      PkRouter::log(__CLASS__ . " sendRaw error: " . $e->getMessage());
     }
     return false;
   }
@@ -51,7 +51,7 @@ class PkResponse {
       print $payload;
       return true;
     } catch (\Throwable $e) {
-      error_log("PkRoute sendRaw error: " . $e->getMessage());
+      PkRouter::log(__CLASS__ . " sendRaw error: " . $e->getMessage());
     }
     return false;
   }
