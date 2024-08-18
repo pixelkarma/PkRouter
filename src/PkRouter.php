@@ -3,6 +3,7 @@
 namespace Pixelkarma\PkRouter;
 
 class PkRouter {
+  public static $logFunction = null;
   protected array $routes = [];
   protected array $data = [];
 
@@ -10,22 +11,36 @@ class PkRouter {
   public PkRequest $request;
   public PkResponse $response;
 
-  final public function __construct(PkRoutesConfig $routes,  PkRequest $request = null, PkResponse $response = null, string $url = null) {
+  final public function __construct(
+    PkRoutesConfig $routes,
+    PkRequest $request = null,
+    PkResponse $response = null,
+    string $url = null,
+    callable $logFunction = null
+  ) {
     try {
+      if ($logFunction !== null) self::$logFunction = $logFunction;
       $this->request = $request ?? new PkRequest($url);
       $this->response = $response ?? new PkResponse($url);
       $this->addRoutes($routes);
       if (method_exists($this, 'setup')) $this->setup();
     } catch (\Throwable $e) {
-      error_log("PkRouter could not construct: " . (string) $e);
+      self::log(__CLASS__ . " could not construct: " . (string) $e);
     }
   }
 
-  final public function __set($name, $value) {
+  final public static function log($message) {
+    if (is_callable(self::$logFunction)) {
+      return call_user_func(self::$logFunction, (string)$message);
+    }
+    error_log((string)$message);
+  }
+
+  public function __set($name, $value) {
     $this->data[$name] = $value;
   }
 
-  final public function __get($name) {
+  public function __get($name) {
     return $this->data[$name] ?? null;
   }
 
@@ -58,7 +73,6 @@ class PkRouter {
   }
 
   final public function run(mixed $route = null) {
-
     if ($route !== null) { // match() was not run first
       if ($route instanceof PkRoute) { // Was a route class sent?
         $this->route = $route;
@@ -107,6 +121,6 @@ class PkRouter {
   }
 
   public function respond($payload, $code = null) {
-    return $this->response->send($payload, $code);
+    return $this->response->sendJson($payload, $code);
   }
 }
