@@ -11,7 +11,9 @@ class PkRoute {
   protected mixed $callback = null;
   protected array $meta = [];
   protected array $params = [];
-  protected array $addons = [];
+
+  protected array $before = [];
+  protected array $after = [];
 
   protected static array $matchOptions = [
     'i' => "(\d+)", // Integer only
@@ -31,19 +33,23 @@ class PkRoute {
   ];
 
   final public function __construct($route) {
-    if (!array_key_exists("name", $route) || empty($route['name'])) throw new \Exception("Route name is required");
-    if (!array_key_exists("methods", $route) || !is_array($route['methods'])) throw new \Exception("Route method array is required");
-    if (!array_key_exists("path", $route) || empty(trim($route['path']))) throw new \Exception("Route path is required");
-    if (!array_key_exists("callback", $route)) throw new \Exception("Route callback is required");
-    if (array_key_exists("meta", $route) && !is_array($route['meta'])) throw new \Exception("Route meta must be an array");
-    if (array_key_exists("addons", $route) && !is_array($route['addons'])) throw new \Exception("Route addons must be an array");
+    // Required
+    if (!array_key_exists("name", $route) || empty($route['name']) || !is_string($route['name'])) throw new \Exception("Route 'name' string is required");
+    if (!array_key_exists("methods", $route) || !is_array($route['methods'])) throw new \Exception("Route 'method' array is required");
+    if (!array_key_exists("path", $route) || empty(trim($route['path'])) || !is_string($route['path'])) throw new \Exception("Route 'path' is required");
+    if (!array_key_exists("callback", $route)) throw new \Exception("Route 'callback' is required");
+    // Optional
+    if (array_key_exists("meta", $route) && !is_array($route['meta'])) throw new \Exception("Route 'meta' must be an array");
+    if (array_key_exists("before", $route) && !is_array($route['before'])) throw new \Exception("Route 'before' must be an array");
+    if (array_key_exists("after", $route) && !is_array($route['after'])) throw new \Exception("Route 'after' must be an array");
 
     $this->name = $route['name'];
     $this->methods = $route['methods'];
     $this->path = rtrim($route['path'], '/'); // no trailing slashes for matching
     $this->callback = $route['callback'];
     $this->meta = $route['meta'] ?? [];
-    $this->addons = $route['addons'] ?? [];
+    $this->before = $route['before'] ?? [];
+    $this->after = $route['after'] ?? [];
 
     if (method_exists($this, 'setup')) $this->setup();
   }
@@ -52,8 +58,11 @@ class PkRoute {
     self::$matchOptions[$key] = $pattern;
   }
 
-  final public function getAddons() {
-    return $this->addons;
+  final public function getAddonsBefore() {
+    return $this->before;
+  }
+  final public function getAddonsAfter() {
+    return $this->after;
   }
   final public function getName() {
     return $this->name;
