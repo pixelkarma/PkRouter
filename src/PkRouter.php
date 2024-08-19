@@ -23,7 +23,7 @@ class PkRouter {
     try {
       if ($logFunction !== null) self::$logFunction = $logFunction;
       $this->request = $request ?? new PkRequest($url);
-      $this->response = $response ?? new PkResponse($url);
+      $this->response = $response ?? new PkResponse();
       $this->addRoutes($routes);
       if (method_exists($this, 'setup')) $this->setup();
     } catch (\Throwable $e) {
