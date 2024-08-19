@@ -11,6 +11,8 @@ class PkRouter {
   public PkRequest $request;
   public PkResponse $response;
 
+  protected $result;
+
   final public function __construct(
     PkRoutesConfig $routes,
     PkRequest $request = null,
@@ -91,36 +93,52 @@ class PkRouter {
       throw new \Exception("Not Found", 404);
     }
 
-    $addons = $this->route->getAddons();
-    if (!empty($addons)) {
-      foreach ($addons as $addon) {
-        if ($addon instanceof PkAddonInterface) {
-          $addunResult = $addon->handle($this);
-          if (true !== $addunResult) {
-            return $addunResult;
-          }
-        }
-      }
-    }
+    // Before Route Addons
+    if (false === $this->executeAddons($this->route->getAddonsBefore())) return false;
 
     $callback = $this->route->getCallback();
 
     if (is_callable($callback)) {
       // Callback is a Function
-      return $callback($this);
+      $this->result = $callback($this);
     } else if (false !== strpos($callback, "@")) {
       // Callback is a "Controller Action"
       list($controllerName, $methodName) = explode('@', $callback);
       $controller = new $controllerName($this);
       if (method_exists($controller, $methodName)) {
-        return call_user_func([$controller, $methodName]);
+        $this->result = call_user_func([$controller, $methodName]);
+      }
+    } else {
+      self::log(__CLASS__ . " did not find a valid callback");
+      throw new \Exception("Route callback was not found", 500);
+    }
+
+    if (isset($this->result)) {
+      // After Route Addons
+      if (false !== $this->executeAddons($this->route->getAddonsAfter())) return true;
+    }
+
+    return false;
+  }
+
+  private function executeAddons(array $addons) {
+    $addonResult = null;
+    foreach ($addons as $addon) {
+      if ($addon instanceof PkAddonInterface) {
+        $addonResult = $addon->handle($this, $addonResult);
+        if (false === $addonResult) {
+          return false;
+        }
       }
     }
-    error_log(__CLASS__ . " did not find a valid callback");
-    throw new \Exception("Route callback was not found", 500);
+    return true;
   }
 
   public function respond($payload, $code = null) {
     return $this->response->sendJson($payload, $code);
+  }
+
+  public function getResult() {
+    return isset($this->result) ? $this->result : null;
   }
 }
