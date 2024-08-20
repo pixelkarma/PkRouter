@@ -2,6 +2,8 @@
 
 namespace Pixelkarma\PkRouter;
 
+use Pixelkarma\PkRouter\Exceptions\InvalidRouteException;
+
 /**
  * Class PkRoutesConfig
  *
@@ -23,18 +25,27 @@ abstract class PkRoutesConfig {
    * Initializes the route list by calling the abstract `routes()` method.
    */
   final public function __construct() {
-    $this->routeList = $this->routes();
+    $returnedRoutesArray = $this->routes();
+    if (is_array($returnedRoutesArray) && count($returnedRoutesArray)) {
+      foreach ($returnedRoutesArray as $route) {
+        $this->addRoute($route);
+      }
+    }
   }
 
-  /**
-   * Retrieves the list of routes.
-   *
-   * @return array The array of routes defined in the application.
-   */
-  final public function getRoutes() {
-    return $this->routeList;
+  final public function addRoute(PkRoute $route) {
+
+    $routeName = $route->getName();
+    if (array_key_exists($routeName, $this->routeList)) {
+      throw new InvalidRouteException("Duplicate route '$routeName'", 500);
+    }
+    $this->routeList[$routeName] = $route;
   }
 
+  final public function getRoutes(string $key = null) {
+    if ($key === null) return $this->routeList;
+    return $this->routeList[$key] ?? false;
+  }
   /**
    * Abstract method for defining routes.
    *

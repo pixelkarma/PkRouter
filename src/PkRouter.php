@@ -26,9 +26,9 @@ class PkRouter {
   public static $logFunction = null;
 
   /**
-   * @var array The array of defined routes.
+   * @var PkRoutesConfig The list of defined routes.
    */
-  protected array $routes = [];
+  protected PkRoutesConfig $routes;
 
   /**
    * @var array A storage array for arbitrary data.
@@ -61,25 +61,23 @@ class PkRouter {
    * @param PkRoutesConfig $routes The route configuration object.
    * @param PkRequest|null $request The request object (optional).
    * @param PkResponse|null $response The response object (optional).
-   * @param string|null $url The URL for the request (optional).
    * @param callable|null $logFunction The custom log function (optional).
    * @throws RouterInitException If the router fails to initialize.
    */
   final public function __construct(
-    PkRoutesConfig $routes,
+    PkRoutesConfig $routes = null,
     PkRequest $request = null,
     PkResponse $response = null,
-    string $url = null,
     callable $logFunction = null
   ) {
     try {
       if ($logFunction !== null) self::$logFunction = $logFunction;
-      $this->request = $request ?? new PkRequest($url);
+      $this->routes = $routes ?? new PkRoutesConfig();
+      $this->request = $request ?? new PkRequest();
       $this->response = $response ?? new PkResponse();
-      $this->addRoutes($routes);
     } catch (\Throwable $e) {
       self::log($e);
-      throw new RouterInitException($e->getMessage() ?? "Router failed to initialize", 500);
+      throw new RouterInitException($e->getMessage() ?? "Router failed to initialize", 500, $e);
     }
   }
 
@@ -116,33 +114,6 @@ class PkRouter {
   }
 
   /**
-   * Adds a route to the router.
-   *
-   * @param PkRoute $route The route object.
-   * @throws InvalidRouteException If the route is invalid.
-   */
-  final protected function addRoute(PkRoute $route) {
-    try {
-      $this->routes[$route->getName()] = $route;
-    } catch (\Throwable $e) {
-      self::log($e);
-      throw new InvalidRouteException($e->getMessage() ?? "Invalid route", 500);
-    }
-  }
-
-  /**
-   * Adds multiple routes from a route configuration object.
-   *
-   * @param PkRoutesConfig $routesConfig The route configuration object.
-   */
-  private function addRoutes(PkRoutesConfig $routesConfig) {
-    $routes = $routesConfig->getRoutes();
-    foreach ($routes as $route) {
-      $this->addRoute($route);
-    }
-  }
-
-  /**
    * Matches a request to a defined route.
    *
    * @param string|null $method The request method (optional).
@@ -153,7 +124,7 @@ class PkRouter {
   final public function match($method = null, $path = null) {
     $method = $method !== null ? $method : $this->request->getMethod();
     $path = $path !== null ? $path : $this->request->getPath();
-    foreach ($this->routes as $route) {
+    foreach ($this->routes->getRoutes() as $route) {
       $foundRoute = $route->matchRequest($method, $path);
       if ($foundRoute === true) {
         $this->route = $route;
@@ -172,14 +143,14 @@ class PkRouter {
    * @throws RouteCallbackException If an error occurs in the route callback.
    */
   final public function run(mixed $route = null) {
-    if ($route !== null) { // match() was not run first
+    if ($this->route === null && $route !== null) { // match() was not run first
       if ($route instanceof PkRoute) { // Was a route class sent?
         $this->route = $route;
       } else if (is_string($route)) { // Named Route?
-        if (array_key_exists($route, $this->routes)) {
-          $this->route = $route;
+        if ($namedRoute = $this->routes->getRoutes($route)) {
+          $this->route = $namedRoute;
         } else {
-          throw new RouteNotFoundException("Not Found", 404);
+          throw new RouteNotFoundException("Named route '$route' not found", 404);
         }
       }
     }
@@ -197,24 +168,19 @@ class PkRouter {
       if (is_callable($callback)) {
         // Callback is a Function
         $this->result = $callback($this);
-      } else if (false !== strpos($callback, "@")) {
-        // Callback is a "Controller Action"
-        list($controllerName, $methodName) = explode('@', $callback);
+      } else if (is_array($callback) && count($callback) == 2) {
+        list($controllerName, $methodName) = $callback;
         $controller = new $controllerName($this);
-        if (!method_exists($controller, $methodName)) throw new RouteCallbackNotFoundException("Route callback method does not exist", 500);
         $this->result = call_user_func([$controller, $methodName]);
       } else {
         throw new RouteCallbackNotFoundException("Route callback was invalid", 500);
       }
     } catch (\Throwable $e) {
       self::log($e);
-      throw new RouteCallbackException("Uncaught error in route callback", 500);
+      throw new RouteCallbackException("Uncaught error in route callback", 500, $e);
     }
 
-    if (isset($this->result)) {
-      // After Route Middleware
-      if (false !== $this->executeMiddleware($this->route->getAfterMiddleware())) return true;
-    }
+    if (false !== $this->executeMiddleware($this->route->getAfterMiddleware())) return true;
 
     return false;
   }
@@ -240,7 +206,7 @@ class PkRouter {
       return true;
     } catch (\Throwable $e) {
       self::log($e);
-      throw new RouteMiddlewareException($e->getMessage() ?? "Middleware had an error", 500);
+      throw new RouteMiddlewareException($e->getMessage() ?? "Middleware had an error", 500, $e);
     }
     return false;
   }
@@ -258,7 +224,7 @@ class PkRouter {
       return $this->response->sendJson($payload, $code);
     } catch (\Throwable $e) {
       self::log($e);
-      throw new RouterResponseException("Router failed to respond", 500);
+      throw new RouterResponseException("Router failed to respond", 500, $e);
     }
   }
 
