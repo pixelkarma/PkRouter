@@ -86,39 +86,36 @@ class PkRoute {
    * @param array $route An associative array containing route configuration.
    * @throws RouteParameterException If any required route parameters are missing or invalid.
    */
-  final public function __construct($route) {
-    // Required
-    if (!array_key_exists("name", $route) || empty($route['name']) || !is_string($route['name'])) {
-      throw new RouteParameterException("Route 'name' string is required");
+  final public function __construct(
+    string $name = null,
+    array $methods,
+    string $path,
+    mixed $callback,
+    array $meta = [],
+    array $before = [],
+    array $after = [],
+
+  ) {
+    if (empty($name = trim($name))) {
+      throw new RouteParameterException("Route 'name' string is required", 500);
     }
-    if (!array_key_exists("methods", $route) || !is_array($route['methods'])) {
-      throw new RouteParameterException("Route 'method' array is required");
-    }
-    if (!array_key_exists("path", $route) || empty(trim($route['path'])) || !is_string($route['path'])) {
-      throw new RouteParameterException("Route 'path' is required");
-    }
-    if (!array_key_exists("callback", $route)) {
-      throw new RouteParameterException("Route 'callback' is required");
+    if (empty($methods)) {
+      throw new RouteParameterException("$name: Route 'methods' array is required", 500);
     }
 
-    // Optional
-    if (array_key_exists("meta", $route) && !is_array($route['meta'])) {
-      throw new RouteParameterException("Route 'meta' must be an array");
-    }
-    if (array_key_exists("before", $route) && !is_array($route['before'])) {
-      throw new RouteParameterException("Route 'before' must be an array");
-    }
-    if (array_key_exists("after", $route) && !is_array($route['after'])) {
-      throw new RouteParameterException("Route 'after' must be an array");
+    if (!is_callable($callback) && false !== strpos($callback, "@")) {
+      list($controllerName, $methodName) = explode('@', $callback);
+      if (!method_exists($controllerName, $methodName)) throw new RouteParameterException("$name: Callback method '$callback' does not exist", 500);
+      $callback = [$controllerName, $methodName];
     }
 
-    $this->name = $route['name'];
-    $this->methods = $route['methods'];
-    $this->path = rtrim($route['path'], '/'); // no trailing slashes for matching
-    $this->callback = $route['callback'];
-    $this->meta = $route['meta'] ?? [];
-    $this->before = $route['before'] ?? [];
-    $this->after = $route['after'] ?? [];
+    $this->name = $name;
+    $this->methods = $methods;
+    $this->path = rtrim(trim($path), '/');
+    $this->callback = $callback;
+    $this->meta = $meta;
+    $this->before = $before;
+    $this->after = $after;
   }
 
   /**
@@ -221,7 +218,7 @@ class PkRoute {
       if (!in_array($method, $this->methods)) return false;
 
       // If the route is an exact match
-      if (rtrim($requestPath, '/') == $this->path && !preg_match("/\[[^:\]]+:[^\]]+\]/", $requestPath)) return true;
+      if (rtrim($requestPath, '/') == $this->path) return true;
 
       if ($this->matchPattern == null) $this->matchPattern = $this->compileRegex($this->path, self::$matchOptions);
 
@@ -237,7 +234,7 @@ class PkRoute {
       return false;
     } catch (\Throwable $e) {
       PkRouter::log($e);
-      throw new RouteMatchException("An error occurred while finding a route match", 500);
+      throw new RouteMatchException("An error occurred while finding a route match", 500, $e);
     }
   }
 
