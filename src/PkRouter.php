@@ -5,21 +5,66 @@ namespace Pixelkarma\PkRouter;
 use Pixelkarma\PkRouter\Exceptions\RouterInitException;
 use Pixelkarma\PkRouter\Exceptions\RouteNotFoundException;
 use Pixelkarma\PkRouter\Exceptions\RouteCallbackException;
+use Pixelkarma\PkRouter\Exceptions\RouteCallbackNotFoundException;
 use Pixelkarma\PkRouter\Exceptions\InvalidRouteException;
-use Pixelkarma\PkRouter\Exceptions\RouteAddonException;
+use Pixelkarma\PkRouter\Exceptions\RouteMiddlewareException;
 use Pixelkarma\PkRouter\Exceptions\RouterResponseException;
+use Throwable;
 
+/**
+ * Class PkRouter
+ *
+ * Handles routing, middleware execution, and response management for the application.
+ * Provides the core functionality for defining routes, matching requests, and executing callbacks.
+ *
+ * @package Pixelkarma\PkRouter
+ */
 class PkRouter {
+  /**
+   * @var callable|null The logging function that can be overridden by the user.
+   */
   public static $logFunction = null;
+
+  /**
+   * @var array The array of defined routes.
+   */
   protected array $routes = [];
+
+  /**
+   * @var array A storage array for arbitrary data.
+   */
   protected array $data = [];
 
+  /**
+   * @var PkRoute The currently matched route.
+   */
   public PkRoute $route;
+
+  /**
+   * @var PkRequest The current request object.
+   */
   public PkRequest $request;
+
+  /**
+   * @var PkResponse The current response object.
+   */
   public PkResponse $response;
 
+  /**
+   * @var mixed The result of the route callback execution.
+   */
   protected $result;
 
+  /**
+   * PkRouter constructor.
+   *
+   * @param PkRoutesConfig $routes The route configuration object.
+   * @param PkRequest|null $request The request object (optional).
+   * @param PkResponse|null $response The response object (optional).
+   * @param string|null $url The URL for the request (optional).
+   * @param callable|null $logFunction The custom log function (optional).
+   * @throws RouterInitException If the router fails to initialize.
+   */
   final public function __construct(
     PkRoutesConfig $routes,
     PkRequest $request = null,
@@ -38,6 +83,11 @@ class PkRouter {
     }
   }
 
+  /**
+   * Logs errors using the provided log function or PHP's error_log if none is provided.
+   *
+   * @param mixed $error The error to log.
+   */
   final public static function log($error) {
     if (is_callable(self::$logFunction)) {
       return call_user_func(self::$logFunction, $error);
@@ -45,14 +95,32 @@ class PkRouter {
     error_log($error);
   }
 
+  /**
+   * Magic method to set a property value.
+   *
+   * @param string $name The property name.
+   * @param mixed $value The value to set.
+   */
   public function __set($name, $value) {
     $this->data[$name] = $value;
   }
 
+  /**
+   * Magic method to get a property value.
+   *
+   * @param string $name The property name.
+   * @return mixed|null The value or null if not set.
+   */
   public function __get($name) {
     return $this->data[$name] ?? null;
   }
 
+  /**
+   * Adds a route to the router.
+   *
+   * @param PkRoute $route The route object.
+   * @throws InvalidRouteException If the route is invalid.
+   */
   final protected function addRoute(PkRoute $route) {
     try {
       $this->routes[$route->getName()] = $route;
@@ -62,6 +130,11 @@ class PkRouter {
     }
   }
 
+  /**
+   * Adds multiple routes from a route configuration object.
+   *
+   * @param PkRoutesConfig $routesConfig The route configuration object.
+   */
   private function addRoutes(PkRoutesConfig $routesConfig) {
     $routes = $routesConfig->getRoutes();
     foreach ($routes as $route) {
@@ -69,6 +142,14 @@ class PkRouter {
     }
   }
 
+  /**
+   * Matches a request to a defined route.
+   *
+   * @param string|null $method The request method (optional).
+   * @param string|null $path The request path (optional).
+   * @return bool True if a matching route is found, otherwise false.
+   * @throws RouteNotFoundException If no route matches the request.
+   */
   final public function match($method = null, $path = null) {
     $method = $method !== null ? $method : $this->request->getMethod();
     $path = $path !== null ? $path : $this->request->getPath();
@@ -82,6 +163,14 @@ class PkRouter {
     throw new RouteNotFoundException("'$path' was not found", 404);
   }
 
+  /**
+   * Executes the matched route's callback and any associated middleware.
+   *
+   * @param mixed|null $route The route to execute (optional).
+   * @return bool True if the route executes successfully, otherwise false.
+   * @throws RouteNotFoundException If no matching route is found.
+   * @throws RouteCallbackException If an error occurs in the route callback.
+   */
   final public function run(mixed $route = null) {
     if ($route !== null) { // match() was not run first
       if ($route instanceof PkRoute) { // Was a route class sent?
@@ -95,47 +184,55 @@ class PkRouter {
       }
     }
 
-    // If a route has not been set by match() or above code
-    // Try to look it up with match() (again?).
     if (!isset($this->route) && false === $this->match()) {
       throw new RouteNotFoundException("Route was not found", 404);
     }
 
-    // Before Route Addons
-    if (false === $this->executeAddons($this->route->getAddonsBefore())) return false;
+    // Before Route Middleware
+    if (false === $this->executeMiddleware($this->route->getBeforeMiddleware())) return false;
 
     $callback = $this->route->getCallback();
 
-    if (is_callable($callback)) {
-      // Callback is a Function
-      $this->result = $callback($this);
-    } else if (false !== strpos($callback, "@")) {
-      // Callback is a "Controller Action"
-      list($controllerName, $methodName) = explode('@', $callback);
-      $controller = new $controllerName($this);
-      if (method_exists($controller, $methodName)) {
+    try {
+      if (is_callable($callback)) {
+        // Callback is a Function
+        $this->result = $callback($this);
+      } else if (false !== strpos($callback, "@")) {
+        // Callback is a "Controller Action"
+        list($controllerName, $methodName) = explode('@', $callback);
+        $controller = new $controllerName($this);
+        if (!method_exists($controller, $methodName)) throw new RouteCallbackNotFoundException("Route callback method does not exist", 500);
         $this->result = call_user_func([$controller, $methodName]);
+      } else {
+        throw new RouteCallbackNotFoundException("Route callback was invalid", 500);
       }
-    } else {
-      self::log(__CLASS__ . " did not find a valid callback");
-      throw new RouteCallbackException("Route callback was not found", 500);
+    } catch (\Throwable $e) {
+      self::log($e);
+      throw new RouteCallbackException("Uncaught error in route callback", 500);
     }
 
     if (isset($this->result)) {
-      // After Route Addons
-      if (false !== $this->executeAddons($this->route->getAddonsAfter())) return true;
+      // After Route Middleware
+      if (false !== $this->executeMiddleware($this->route->getAfterMiddleware())) return true;
     }
 
     return false;
   }
 
-  private function executeAddons(array $addons) {
+  /**
+   * Executes the middleware associated with a route.
+   *
+   * @param array $middleware The array of middleware objects.
+   * @return bool True if all middleware executes successfully, otherwise false.
+   * @throws RouteMiddlewareException If an error occurs during middleware execution.
+   */
+  private function executeMiddleware(array $middleware) {
     try {
-      $addonResult = null;
-      foreach ($addons as $addon) {
-        if ($addon instanceof PkAddonInterface) {
-          $addonResult = $addon->handle($this, $addonResult);
-          if (false === $addonResult) {
+      $middlewareResult = null;
+      foreach ($middleware as $m) {
+        if ($m instanceof PkMiddlewareInterface) {
+          $middlewareResult = $m->handle($this, $middlewareResult);
+          if (false === $middlewareResult) {
             return false;
           }
         }
@@ -143,11 +240,19 @@ class PkRouter {
       return true;
     } catch (\Throwable $e) {
       self::log($e);
-      throw new RouteAddonException($e->getMessage() ?? "An addon had an error", 500);
+      throw new RouteMiddlewareException($e->getMessage() ?? "Middleware had an error", 500);
     }
     return false;
   }
 
+  /**
+   * Sends a JSON response to the client.
+   *
+   * @param mixed $payload The data to send.
+   * @param int|null $code The HTTP status code (optional).
+   * @return bool True if the response is sent successfully, otherwise false.
+   * @throws RouterResponseException If the router fails to send the response.
+   */
   public function respond($payload, $code = null) {
     try {
       return $this->response->sendJson($payload, $code);
@@ -157,6 +262,11 @@ class PkRouter {
     }
   }
 
+  /**
+   * Returns the result of the route callback execution.
+   *
+   * @return mixed|null The result of the callback or null if no result is set.
+   */
   public function getResult() {
     return isset($this->result) ? $this->result : null;
   }
