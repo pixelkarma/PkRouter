@@ -2,6 +2,9 @@
 
 namespace Pixelkarma\PkRouter;
 
+use Pixelkarma\PkRouter\Exceptions\RouteRequestException;
+
+
 class PkRequest {
 
   const CONTENT_TYPE_JSON = 'application/json';
@@ -31,19 +34,22 @@ class PkRequest {
 
 
   final public function __construct(string $url = null) {
-    $this->rawBody = file_get_contents("php://input");
-    $this->contentType = strtolower($_SERVER['CONTENT_TYPE'] ?? '');
-    $this->cookies = $_COOKIE ?? [];
-    $this->method = $_SERVER['REQUEST_METHOD'] ?? null;
+    try {
+      $this->rawBody = file_get_contents("php://input");
+      $this->contentType = strtolower($_SERVER['CONTENT_TYPE'] ?? '');
+      $this->cookies = $_COOKIE ?? [];
+      $this->method = $_SERVER['REQUEST_METHOD'] ?? null;
 
-    $this->initializeUrl($url);
-    $this->initializeHeaders();
-    $this->initializeBody();
+      $this->initializeUrl($url);
+      $this->initializeHeaders();
+      $this->initializeBody();
 
-    $this->secure = $this->isSSL();
-    $this->ip = $this->determineClientIP();
+      $this->secure = $this->isSSL();
+      $this->ip = $this->determineClientIP();
 
-    if (method_exists($this, 'setup')) $this->setup();
+    } catch (\Throwable $e) {
+      throw new RouteRequestException($e->getMessage() ?? "Request construct failed");
+    }
   }
 
   final public function getHeader(string $key = null, $default = null) {
