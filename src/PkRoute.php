@@ -3,6 +3,7 @@
 namespace Pixelkarma\PkRouter;
 
 use Pixelkarma\PkRouter\Exceptions\RouteParameterException;
+use Pixelkarma\PkRouter\Exceptions\RouteMatchException;
 
 /**
  * Class PkRoute
@@ -215,23 +216,29 @@ class PkRoute {
    * @return bool True if the request matches the route, false otherwise.
    */
   public function matchRequest(string $method, string $requestPath) {
-    if (!in_array($method, $this->methods)) return false;
+    try {
+      // If the request method is not allowed in the route, it's not a match.
+      if (!in_array($method, $this->methods)) return false;
 
-    if (rtrim($requestPath, '/') == $this->path) {
-      return true;
-    }
-    if ($this->matchPattern == null) $this->matchPattern = $this->compileRegex($this->path, self::$matchOptions);
+      // If the route is an exact match
+      if (rtrim($requestPath, '/') == $this->path && !preg_match("/\[[^:\]]+:[^\]]+\]/", $requestPath)) return true;
 
-    if (preg_match($this->matchPattern, $requestPath, $matches)) {
-      $params = [];
-      preg_match_all('/\[.*?\:(.*?)\]/', $this->path, $paramMatches);
-      foreach ($paramMatches[1] as $index => $paramName) {
-        $params[$paramName] = $matches[$index + 1];
+      if ($this->matchPattern == null) $this->matchPattern = $this->compileRegex($this->path, self::$matchOptions);
+
+      if (preg_match($this->matchPattern, $requestPath, $matches)) {
+        $params = [];
+        preg_match_all('/\[.*?\:(.*?)\]/', $this->path, $paramMatches);
+        foreach ($paramMatches[1] as $index => $paramName) {
+          $params[$paramName] = $matches[$index + 1];
+        }
+        $this->params = $params;
+        return true;
       }
-      $this->params = $params;
-      return true;
+      return false;
+    } catch (\Throwable $e) {
+      PkRouter::log($e);
+      throw new RouteMatchException("An error occurred while finding a route match", 500);
     }
-    return false;
   }
 
   /**
