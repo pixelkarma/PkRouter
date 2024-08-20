@@ -2,6 +2,9 @@
 
 namespace Pixelkarma\PkRouter;
 
+use Pixelkarma\PkRouter\Exceptions\RouteParameterException;
+
+
 class PkRoute {
   private $matchPattern = null;
 
@@ -34,14 +37,15 @@ class PkRoute {
 
   final public function __construct($route) {
     // Required
-    if (!array_key_exists("name", $route) || empty($route['name']) || !is_string($route['name'])) throw new \Exception("Route 'name' string is required");
-    if (!array_key_exists("methods", $route) || !is_array($route['methods'])) throw new \Exception("Route 'method' array is required");
-    if (!array_key_exists("path", $route) || empty(trim($route['path'])) || !is_string($route['path'])) throw new \Exception("Route 'path' is required");
-    if (!array_key_exists("callback", $route)) throw new \Exception("Route 'callback' is required");
+    if (!array_key_exists("name", $route) || empty($route['name']) || !is_string($route['name'])) throw new RouteParameterException("Route 'name' string is required");
+    if (!array_key_exists("methods", $route) || !is_array($route['methods'])) throw new RouteParameterException("Route 'method' array is required");
+    if (!array_key_exists("path", $route) || empty(trim($route['path'])) || !is_string($route['path'])) throw new RouteParameterException("Route 'path' is required");
+    if (!array_key_exists("callback", $route)) throw new RouteParameterException("Route 'callback' is required");
+
     // Optional
-    if (array_key_exists("meta", $route) && !is_array($route['meta'])) throw new \Exception("Route 'meta' must be an array");
-    if (array_key_exists("before", $route) && !is_array($route['before'])) throw new \Exception("Route 'before' must be an array");
-    if (array_key_exists("after", $route) && !is_array($route['after'])) throw new \Exception("Route 'after' must be an array");
+    if (array_key_exists("meta", $route) && !is_array($route['meta'])) throw new RouteParameterException("Route 'meta' must be an array");
+    if (array_key_exists("before", $route) && !is_array($route['before'])) throw new RouteParameterException("Route 'before' must be an array");
+    if (array_key_exists("after", $route) && !is_array($route['after'])) throw new RouteParameterException("Route 'after' must be an array");
 
     $this->name = $route['name'];
     $this->methods = $route['methods'];
@@ -50,8 +54,6 @@ class PkRoute {
     $this->meta = $route['meta'] ?? [];
     $this->before = $route['before'] ?? [];
     $this->after = $route['after'] ?? [];
-
-    if (method_exists($this, 'setup')) $this->setup();
   }
 
   final public static function addMatchPattern(string $key, string $pattern) {
