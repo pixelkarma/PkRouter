@@ -121,24 +121,23 @@ class PkRequest {
    *
    * Initializes the request by parsing the URL, headers, and body.
    *
-   * @param string|null $url Optional URL to use instead of the current request URL.
    * @throws RouteRequestException If the request cannot be properly initialized.
    */
-  final public function __construct(string $url = null) {
+  final public function __construct() {
     try {
       $this->rawBody = file_get_contents("php://input");
       $this->contentType = strtolower($_SERVER['CONTENT_TYPE'] ?? '');
       $this->cookies = $_COOKIE ?? [];
       $this->method = $_SERVER['REQUEST_METHOD'] ?? null;
 
-      $this->initializeUrl($url);
+      $this->initializeUrl();
       $this->initializeHeaders();
       $this->initializeBody();
 
       $this->secure = $this->isSSL();
       $this->ip = $this->determineClientIP();
     } catch (\Throwable $e) {
-      throw new RouteRequestException($e->getMessage() ?? "Request construct failed");
+      throw new RouteRequestException("Request Failed", 400, $e);
     }
   }
 
@@ -311,11 +310,9 @@ class PkRequest {
 
   /**
    * Initializes the URL properties from the given or current request URL.
-   *
-   * @param string|null $url The URL to initialize, or null to use the current request URL.
    */
-  final protected function initializeUrl(string $url = null) {
-    $this->url = $url !== null ? $url : $this->getCurrentUrl();
+  final protected function initializeUrl() {
+    $this->url = $this->getCurrentUrl();
     $parsedUrl = parse_url($this->url);
     if (!empty($parsedUrl['scheme'])) $this->scheme = $parsedUrl['scheme'];
     if (!empty($parsedUrl['host'])) $this->host = $parsedUrl['host'];
