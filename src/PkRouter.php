@@ -2,6 +2,13 @@
 
 namespace Pixelkarma\PkRouter;
 
+use Pixelkarma\PkRouter\Exceptions\RouterInitException;
+use Pixelkarma\PkRouter\Exceptions\RouteNotFoundException;
+use Pixelkarma\PkRouter\Exceptions\RouteCallbackException;
+use Pixelkarma\PkRouter\Exceptions\InvalidRouteException;
+use Pixelkarma\PkRouter\Exceptions\RouteAddonException;
+use Pixelkarma\PkRouter\Exceptions\RouterResponseException;
+
 class PkRouter {
   public static $logFunction = null;
   protected array $routes = [];
@@ -25,17 +32,17 @@ class PkRouter {
       $this->request = $request ?? new PkRequest($url);
       $this->response = $response ?? new PkResponse();
       $this->addRoutes($routes);
-      if (method_exists($this, 'setup')) $this->setup();
     } catch (\Throwable $e) {
-      self::log(__CLASS__ . " could not construct: " . (string) $e);
+      self::log($e);
+      throw new RouterInitException($e->getMessage() ?? "Router failed to initialize", 500);
     }
   }
 
-  final public static function log($message) {
+  final public static function log($error) {
     if (is_callable(self::$logFunction)) {
-      return call_user_func(self::$logFunction, (string)$message);
+      return call_user_func(self::$logFunction, $error);
     }
-    error_log((string)$message);
+    error_log($error);
   }
 
   public function __set($name, $value) {
@@ -50,7 +57,8 @@ class PkRouter {
     try {
       $this->routes[$route->getName()] = $route;
     } catch (\Throwable $e) {
-      error_log(__CLASS__ . " route error: " . (string) $e);
+      self::log($e);
+      throw new InvalidRouteException($e->getMessage() ?? "Invalid route", 500);
     }
   }
 
@@ -71,7 +79,7 @@ class PkRouter {
         return true;
       }
     }
-    return false;
+    throw new RouteNotFoundException("'$path' was not found", 404);
   }
 
   final public function run(mixed $route = null) {
@@ -82,7 +90,7 @@ class PkRouter {
         if (array_key_exists($route, $this->routes)) {
           $this->route = $route;
         } else {
-          throw new \Exception("Route named '$route' was not found", 404);
+          throw new RouteNotFoundException("Not Found", 404);
         }
       }
     }
@@ -90,7 +98,7 @@ class PkRouter {
     // If a route has not been set by match() or above code
     // Try to look it up with match() (again?).
     if (!isset($this->route) && false === $this->match()) {
-      throw new \Exception("Not Found", 404);
+      throw new RouteNotFoundException("Route was not found", 404);
     }
 
     // Before Route Addons
@@ -110,7 +118,7 @@ class PkRouter {
       }
     } else {
       self::log(__CLASS__ . " did not find a valid callback");
-      throw new \Exception("Route callback was not found", 500);
+      throw new RouteCallbackException("Route callback was not found", 500);
     }
 
     if (isset($this->result)) {
@@ -122,20 +130,31 @@ class PkRouter {
   }
 
   private function executeAddons(array $addons) {
-    $addonResult = null;
-    foreach ($addons as $addon) {
-      if ($addon instanceof PkAddonInterface) {
-        $addonResult = $addon->handle($this, $addonResult);
-        if (false === $addonResult) {
-          return false;
+    try {
+      $addonResult = null;
+      foreach ($addons as $addon) {
+        if ($addon instanceof PkAddonInterface) {
+          $addonResult = $addon->handle($this, $addonResult);
+          if (false === $addonResult) {
+            return false;
+          }
         }
       }
+      return true;
+    } catch (\Throwable $e) {
+      self::log($e);
+      throw new RouteAddonException($e->getMessage() ?? "An addon had an error", 500);
     }
-    return true;
+    return false;
   }
 
   public function respond($payload, $code = null) {
-    return $this->response->sendJson($payload, $code);
+    try {
+      return $this->response->sendJson($payload, $code);
+    } catch (\Throwable $e) {
+      self::log($e);
+      throw new RouterResponseException("Router failed to respond", 500);
+    }
   }
 
   public function getResult() {
