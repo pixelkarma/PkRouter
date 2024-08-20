@@ -185,7 +185,7 @@ class PkRouter {
     }
 
     if (!isset($this->route) && false === $this->match()) {
-      throw new RouteNotFoundException("Route was not found", 404);
+      throw new RouteNotFoundException("'{$this->route->getPath()}' was not found", 404);
     }
 
     // Before Route Middleware
