@@ -13,7 +13,7 @@ use Pixelkarma\PkRouter\Exceptions\RouterResponseException;
  * @package Pixelkarma\PkRouter
  */
 class PkResponse {
-  
+
   /**
    * @var array $headers The headers to be sent with the response.
    */
@@ -83,7 +83,7 @@ class PkResponse {
       return $payload;
     } catch (\Throwable $e) {
       PkRouter::log($e);
-      throw new RouterResponseException($e->getMessage() ?? "Response failed", 500);
+      throw new RouterResponseException("Response failed", 500, $e);
     }
     return false;
   }
@@ -104,7 +104,7 @@ class PkResponse {
       return true;
     } catch (\Throwable $e) {
       PkRouter::log($e);
-      throw new RouterResponseException($e->getMessage() ?? "Response failed", 500);
+      throw new RouterResponseException("Response failed", 500, $e);
     }
     return false;
   }
