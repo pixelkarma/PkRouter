@@ -3,13 +3,13 @@
 namespace Pixelkarma\PkRouter;
 
 abstract class PkRoutesConfig {
-  abstract protected function setup();
-  protected array $routes = [];
+  abstract protected function routes();
+  protected array $routeList = [];
 
   final public function __construct() {
-    $this->routes = $this->setup();
+    $this->routeList = $this->routes();
   }
   final public function getRoutes() {
-    return $this->routes;
+    return $this->routeList;
   }
 }
