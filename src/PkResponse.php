@@ -2,15 +2,14 @@
 
 namespace Pixelkarma\PkRouter;
 
+use Pixelkarma\PkRouter\Exceptions\RouterResponseException;
+
+
 class PkResponse {
   private array $headers = [];
   private int $code = 200;
 
   public bool $sent = false;
-
-  final public function __construct() {
-    if (method_exists($this, 'setup')) $this->setup();
-  }
 
   final public function setHeader(string $name, string $value = ''): bool {
     if (!trim($name)) return false;
@@ -37,9 +36,10 @@ class PkResponse {
       $this->sendHeaders();
 
       print $payload;
-      return true;
+      return $payload;
     } catch (\Throwable $e) {
-      PkRouter::log(__CLASS__ . " sendRaw error: " . $e->getMessage());
+      PkRouter::log($e);
+      throw new RouterResponseException($e->getMessage() ?? "Response failed", 500);
     }
     return false;
   }
@@ -51,7 +51,8 @@ class PkResponse {
       print $payload;
       return true;
     } catch (\Throwable $e) {
-      PkRouter::log(__CLASS__ . " sendRaw error: " . $e->getMessage());
+      PkRouter::log($e);
+      throw new RouterResponseException($e->getMessage() ?? "Response failed", 500);
     }
     return false;
   }
