@@ -102,11 +102,6 @@ class PkRequest {
   protected ?string $user = null;
 
   /**
-   * @var ?string $fragment The fragment part of the URL, if present.
-   */
-  protected ?string $fragment = null;
-
-  /**
    * @var ?string $pass The password part of the URL, if present.
    */
   protected ?string $pass = null;
