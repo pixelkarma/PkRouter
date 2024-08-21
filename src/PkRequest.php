@@ -300,15 +300,6 @@ class PkRequest {
   }
 
   /**
-   * Retrieves the fragment part of the URL, if present.
-   *
-   * @return ?string The fragment part of the URL.
-   */
-  final public function getFragment() {
-    return $this->fragment;
-  }
-
-  /**
    * Initializes the URL properties from the given or current request URL.
    */
   final protected function initializeUrl() {
@@ -321,7 +312,6 @@ class PkRequest {
     if (!empty($parsedUrl['pass'])) $this->pass = $parsedUrl['pass'];
     if (!empty($parsedUrl['path'])) $this->path = $parsedUrl['path'];
     if (!empty($parsedUrl['query'])) parse_str($parsedUrl['query'], $this->query);
-    if (!empty($parsedUrl['fragment'])) $this->fragment = $parsedUrl['fragment'];
   }
 
   /**
