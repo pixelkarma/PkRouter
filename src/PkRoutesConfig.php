@@ -34,7 +34,6 @@ abstract class PkRoutesConfig {
   }
 
   final public function addRoute(PkRoute $route) {
-
     $routeName = $route->getName();
     if (array_key_exists($routeName, $this->routeList)) {
       throw new InvalidRouteException("Duplicate route '$routeName'", 500);
