@@ -6,10 +6,8 @@ use Pixelkarma\PkRouter\Exceptions\RouterInitException;
 use Pixelkarma\PkRouter\Exceptions\RouteNotFoundException;
 use Pixelkarma\PkRouter\Exceptions\RouteCallbackException;
 use Pixelkarma\PkRouter\Exceptions\RouteCallbackNotFoundException;
-use Pixelkarma\PkRouter\Exceptions\InvalidRouteException;
 use Pixelkarma\PkRouter\Exceptions\RouteMiddlewareException;
 use Pixelkarma\PkRouter\Exceptions\RouterResponseException;
-use Throwable;
 
 /**
  * Class PkRouter
@@ -51,11 +49,6 @@ class PkRouter {
   public PkResponse $response;
 
   /**
-   * @var mixed The result of the route callback execution.
-   */
-  protected $result;
-
-  /**
    * PkRouter constructor.
    *
    * @param PkRoutesConfig $routes The route configuration object.
@@ -90,7 +83,7 @@ class PkRouter {
     if (is_callable(self::$logFunction)) {
       return call_user_func(self::$logFunction, $error);
     }
-    error_log($error);
+    error_log((string)$error);
   }
 
   /**
@@ -99,7 +92,7 @@ class PkRouter {
    * @param string $name The property name.
    * @param mixed $value The value to set.
    */
-  public function __set($name, $value) {
+  public function __set(string $name, mixed $value) {
     $this->data[$name] = $value;
   }
 
@@ -109,7 +102,7 @@ class PkRouter {
    * @param string $name The property name.
    * @return mixed|null The value or null if not set.
    */
-  public function __get($name) {
+  public function __get(string $name) {
     return $this->data[$name] ?? null;
   }
 
@@ -121,7 +114,7 @@ class PkRouter {
    * @return bool True if a matching route is found, otherwise false.
    * @throws RouteNotFoundException If no route matches the request.
    */
-  final public function match($method = null, $path = null) {
+  final public function match(string $method = null, string $path = null) {
     $method = $method !== null ? $method : $this->request->getMethod();
     $path = $path !== null ? $path : $this->request->getPath();
     foreach ($this->routes->getRoutes() as $route) {
@@ -167,11 +160,11 @@ class PkRouter {
     try {
       if (is_callable($callback)) {
         // Callback is a Function
-        $this->result = $callback($this);
+        $callback($this);
       } else if (is_array($callback) && count($callback) == 2) {
         list($controllerName, $methodName) = $callback;
         $controller = new $controllerName($this);
-        $this->result = call_user_func([$controller, $methodName]);
+        call_user_func([$controller, $methodName]);
       } else {
         throw new RouteCallbackNotFoundException("Route callback was invalid", 500);
       }
@@ -193,6 +186,7 @@ class PkRouter {
    * @throws RouteMiddlewareException If an error occurs during middleware execution.
    */
   private function executeMiddleware(array $middleware) {
+    if (empty($middleware)) return true;
     try {
       $middlewareResult = null;
       foreach ($middleware as $m) {
@@ -219,7 +213,7 @@ class PkRouter {
    * @return bool True if the response is sent successfully, otherwise false.
    * @throws RouterResponseException If the router fails to send the response.
    */
-  public function respond($payload, $code = null) {
+  public function respond(mixed $payload, int $code = null) {
     try {
       return $this->response->sendJson($payload, $code);
     } catch (\Throwable $e) {
