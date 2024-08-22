@@ -25,9 +25,9 @@ class PkResponse {
   private int $code = 200;
 
   /**
-   * @var bool $sent Flag indicating whether the response has been sent.
+   * @var mixed $payload The payload that was sent.
    */
-  public bool $sent = false;
+  private mixed $payload = null;
 
   /**
    * Sets a header to be sent with the response.
@@ -66,21 +66,22 @@ class PkResponse {
    *
    * @param array $payload The data to be sent as a JSON response.
    * @param int|null $code The HTTP response code (optional).
-   * @return bool|string The JSON encoded payload if successful, false otherwise.
+   * @return bool True if the response was sent successfully, false otherwise.
    * @throws RouterResponseException If an error occurs while encoding or sending the response.
    */
-  final public function sendJson(array $payload, int $code = null): bool|string {
+  final public function sendJson(array $payload, int $code = null): bool {
     try {
       if ($code !== null) $this->setCode($code);
 
       $this->setHeader("Content-Type", "application/json");
-
-      $payload = json_encode($payload, JSON_THROW_ON_ERROR);
-
       $this->sendHeaders();
 
-      print $payload;
-      return $payload;
+      $this->payload = json_encode($payload, JSON_THROW_ON_ERROR);
+      echo $this->payload;
+
+      $this->closeConnection();
+
+      return true;
     } catch (\Throwable $e) {
       PkRouter::log($e);
       throw new RouterResponseException("Response failed", 500, $e);
@@ -93,14 +94,20 @@ class PkResponse {
    *
    * @param mixed $payload The raw data to be sent in the response.
    * @param int|null $code The HTTP response code (optional).
-   * @return bool True if the response was sent successfully, false otherwise.
+   * @return bool True if the response was sent successfully, throws otherwise.
    * @throws RouterResponseException If an error occurs while sending the response.
    */
   final public function sendRaw($payload, int $code = null): bool {
     try {
       if ($code !== null) $this->setCode($code);
+
       $this->sendHeaders();
-      print $payload;
+
+      $this->payload = $payload;
+      echo $this->payload;
+
+      $this->closeConnection();
+
       return true;
     } catch (\Throwable $e) {
       PkRouter::log($e);
@@ -119,6 +126,26 @@ class PkResponse {
     foreach ($this->headers as $name => $value) {
       header("$name: $value");
     }
-    $this->sent = true;
+  }
+
+  /**
+   * Returns the payload sent to the user.
+   *
+   * @return mixed|null
+   */
+  final public function getPayload() {
+    return $this->payload ?? null;
+  }
+  /**
+   * Close the connection
+   */
+  public function closeConnection() {
+
+    // Close the connection with the client
+    ignore_user_abort(true); // Continue executing the script even if the user disconnects
+    header("Connection: close"); // Inform the client that the connection is closed
+    header("Content-Length: " . ob_get_length()); // Send content length
+    ob_end_flush(); // Flush the rest of the output buffer
+    flush();        // Ensure that all output has been sent to the client
   }
 }
