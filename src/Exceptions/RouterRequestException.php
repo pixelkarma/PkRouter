@@ -2,8 +2,6 @@
 
 namespace Pixelkarma\PkRouter\Exceptions;
 
-use Exception;
-
 /**
  * Class RouteRequestException
  * 
@@ -13,7 +11,7 @@ use Exception;
  * 
  * @package Pixelkarma\PkRouter\Exceptions
  */
-class RouteRequestException extends Exception {
+class RouteRequestException extends \Exception {
   
   /**
    * RouteRequestException constructor.
@@ -22,7 +20,7 @@ class RouteRequestException extends Exception {
    * @param int $code The Exception code. Defaults to 400.
    * @param Exception|null $previous The previous exception used for exception chaining.
    */
-  public function __construct($message = "Router request exception", $code = 400, Exception $previous = null) {
+  public function __construct($message = "Router request exception", $code = 400, \Throwable $previous = null) {
     parent::__construct($message, $code, $previous);
   }
 }

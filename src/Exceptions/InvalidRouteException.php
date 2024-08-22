@@ -2,8 +2,6 @@
 
 namespace Pixelkarma\PkRouter\Exceptions;
 
-use Exception;
-
 /**
  * Class InvalidRouteException
  * 
@@ -13,7 +11,7 @@ use Exception;
  * 
  * @package Pixelkarma\PkRouter\Exceptions
  */
-class InvalidRouteException extends Exception {
+class InvalidRouteException extends \Exception {
   
   /**
    * InvalidRouteException constructor.
@@ -22,7 +20,7 @@ class InvalidRouteException extends Exception {
    * @param int $code The Exception code. Defaults to 500.
    * @param Exception|null $previous The previous exception used for exception chaining.
    */
-  public function __construct($message = "Invalid route", $code = 500, Exception $previous = null) {
+  public function __construct($message = "Invalid route", $code = 500, \Throwable $previous = null) {
     parent::__construct($message, $code, $previous);
   }
 }

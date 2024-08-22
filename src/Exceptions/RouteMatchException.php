@@ -2,8 +2,6 @@
 
 namespace Pixelkarma\PkRouter\Exceptions;
 
-use Exception;
-
 /**
  * Class RouteMatchException
  * 
@@ -14,7 +12,7 @@ use Exception;
  * 
  * @package Pixelkarma\PkRouter\Exceptions
  */
-class RouteMatchException extends Exception {
+class RouteMatchException extends \Exception {
   
   /**
    * RouteMatchException constructor.
@@ -23,7 +21,7 @@ class RouteMatchException extends Exception {
    * @param int $code The Exception code. Defaults to 500.
    * @param Exception|null $previous The previous exception used for exception chaining.
    */
-  public function __construct($message = "Route match exception", $code = 500, Exception $previous = null) {
+  public function __construct($message = "Route match exception", $code = 500, \Throwable $previous = null) {
     parent::__construct($message, $code, $previous);
   }
 }

@@ -2,8 +2,6 @@
 
 namespace Pixelkarma\PkRouter\Exceptions;
 
-use Exception;
-
 /**
  * Class RouteNotFoundException
  * 
@@ -13,7 +11,7 @@ use Exception;
  * 
  * @package Pixelkarma\PkRouter\Exceptions
  */
-class RouteNotFoundException extends Exception {
+class RouteNotFoundException extends \Exception {
   
   /**
    * RouteNotFoundException constructor.
@@ -22,7 +20,7 @@ class RouteNotFoundException extends Exception {
    * @param int $code The Exception code. Defaults to 404.
    * @param Exception|null $previous The previous exception used for exception chaining.
    */
-  public function __construct($message = "Route not found", $code = 404, Exception $previous = null) {
+  public function __construct($message = "Route not found", $code = 404, \Throwable $previous = null) {
     parent::__construct($message, $code, $previous);
   }
 }

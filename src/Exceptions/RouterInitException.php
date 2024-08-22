@@ -2,8 +2,6 @@
 
 namespace Pixelkarma\PkRouter\Exceptions;
 
-use Exception;
-
 /**
  * Class RouterInitException
  * 
@@ -13,7 +11,7 @@ use Exception;
  * 
  * @package Pixelkarma\PkRouter\Exceptions
  */
-class RouterInitException extends Exception {
+class RouterInitException extends \Exception {
   
   /**
    * RouterInitException constructor.
@@ -22,7 +20,7 @@ class RouterInitException extends Exception {
    * @param int $code The Exception code. Defaults to 500.
    * @param Exception|null $previous The previous exception used for exception chaining.
    */
-  public function __construct($message = "Router init exception", $code = 500, Exception $previous = null) {
+  public function __construct($message = "Router init exception", $code = 500, \Throwable $previous = null) {
     parent::__construct($message, $code, $previous);
   }
 }
