@@ -191,8 +191,9 @@ class PkRequest {
    * @param mixed $default The default value to return if the file is not found.
    * @return mixed The file value or all files as an array.
    */
-  final public function getFile(string $key = "", $default = null) {
-    return $key ? ($this->files[$key] ?? $default) : ($this->files ?? []);
+  final public function getFile(string $key = null, $default = null) {
+    if ($key == null) return ($this->files ?? []);
+    return ($this->files[$key] ?? $default);
   }
 
   /**
@@ -356,7 +357,7 @@ class PkRequest {
     if (($scheme === 'http' && $port != 80) || ($scheme === 'https' && $port != 443)) {
       $host .= ':' . $port;
     }
-    return $scheme . '://' . $host . $uri;
+    return $scheme . '://' . $host . ":" . $port . $uri;
   }
 
   /**
