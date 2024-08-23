@@ -1,10 +1,5 @@
 [
   { "_key": "abc123", "first": "John", "last": "Doe" },
   { "_key": "abc124", "first": "Jane", "last": "Smith" },
-  { "_key": "abc125", "first": "Pat", "last": "Ward" },
-  { "first": "Jerry", "last": "Garcia", "_key": "66c79ef93701d" },
-  { "first": "Rick", "last": "Sanchez", "_key": "66c7e734a5075" },
-  { "first": "Rick", "last": "Sanchez", "_key": "66c7e7459224a" },
-  { "first": "Rick", "last": "Sanchez", "_key": "66c7e9d5aa8e9" },
-  { "first": "Rick", "last": "Sanchez", "_key": "66c7e9e75cbbf" }
+  { "_key": "abc125", "first": "Pat", "last": "Ward" }
 ]
