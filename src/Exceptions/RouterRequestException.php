@@ -3,7 +3,7 @@
 namespace Pixelkarma\PkRouter\Exceptions;
 
 /**
- * Class RouteRequestException
+ * Class RouterRequestException
  * 
  * This exception is thrown when there is an issue with the request made to a route.
  * It extends the base Exception class and includes a default message, code,
@@ -11,10 +11,10 @@ namespace Pixelkarma\PkRouter\Exceptions;
  * 
  * @package Pixelkarma\PkRouter\Exceptions
  */
-class RouteRequestException extends \Exception {
+class RouterRequestException extends \Exception {
   
   /**
-   * RouteRequestException constructor.
+   * RouterRequestException constructor.
    * 
    * @param string $message The Exception message to throw. Defaults to "Router request exception".
    * @param int $code The Exception code. Defaults to 400.
