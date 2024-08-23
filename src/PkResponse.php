@@ -14,6 +14,12 @@ use Pixelkarma\PkRouter\Exceptions\RouterResponseException;
  */
 class PkResponse {
 
+  final public function __construct() {
+    $this->setup();
+  }
+  protected function setup() {
+  }
+
   /**
    * @var array $headers The headers to be sent with the response.
    */
@@ -36,10 +42,8 @@ class PkResponse {
    * @param string $value The value of the header.
    * @return bool True if the header was set, false if the header name was empty.
    */
-  final public function setHeader(string $name, string $value = ''): bool {
-    if (!trim($name)) return false;
-    $this->headers[$name] = $value;
-    return true;
+  final public function setHeader(string $name, string $value = ''): void {
+    $this->headers[strtolower($name)] = $value;
   }
 
   /**
@@ -59,6 +63,19 @@ class PkResponse {
    */
   final public function clearHeaders(): void {
     $this->headers = [];
+  }
+
+  /**
+   * Retrieves a specific header or all headers that will be, or have been, sent.
+   *
+   * @param string|null $key The header name to retrieve, or null to retrieve all headers.
+   * @param mixed $default The default value to return if the header is not found.
+   * @return mixed The header value or all headers as an array.
+   */
+  final public function getHeader(string $key = null, $default = null) {
+    if ($key === null) return $this->headers ?? [];
+
+    return $this->headers[strtolower($key)] ?? $default;
   }
 
   /**
