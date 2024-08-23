@@ -1,0 +1,22 @@
+{
+  "name": "pixelkarma/pkroutercrud",
+  "version": "1.0.0",
+  "description": "A simple CRUD example for PkRouter",
+  "homepage": "https://github.com/pixelkarma/PkRouter",
+  "type": "project",
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "StorageExample\\": "./src/"
+    }
+  },
+  "repositories": [
+    {
+      "type": "path",
+      "url": "../../"
+    }
+  ],
+  "require": {
+    "pixelkarma/pkrouter": "^1.0"
+  }
+}

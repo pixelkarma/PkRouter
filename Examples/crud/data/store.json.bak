@@ -1,0 +1,5 @@
+[
+  { "_key": "abc123", "first": "John", "last": "Doe" },
+  { "_key": "abc124", "first": "Jane", "last": "Smith" },
+  { "_key": "abc125", "first": "Pat", "last": "Ward" }
+]
