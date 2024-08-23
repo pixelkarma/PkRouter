@@ -2,7 +2,8 @@
 
 namespace Pixelkarma\PkRouter;
 
-use Pixelkarma\PkRouter\Exceptions\RouteRequestException;
+use Pixelkarma\PkRouter\Exceptions\RouterRequestException;
+use Pixelkarma\PkRouter\Exceptions\BodyParserException;
 
 /**
  * Class PkRequest
@@ -20,6 +21,12 @@ class PkRequest {
   const CONTENT_TYPE_JSON = 'application/json';
   const CONTENT_TYPE_FORM = 'application/x-www-form-urlencoded';
   const CONTENT_TYPE_MULTIPART = 'multipart/form-data';
+
+  /**
+   * @var array $bodyParsers Stored functions for parsing body content
+   */
+
+  private array $bodyParsers = [];
 
   /**
    * @var mixed $ip The client's IP address.
@@ -54,7 +61,7 @@ class PkRequest {
   /**
    * @var array $body The parsed body of the request.
    */
-  protected array $body = [];
+  protected mixed $body = [];
 
   /**
    * @var array $files The uploaded files, if any.
@@ -116,24 +123,39 @@ class PkRequest {
    *
    * Initializes the request by parsing the URL, headers, and body.
    *
-   * @throws RouteRequestException If the request cannot be properly initialized.
+   * @throws RouterRequestException If the request cannot be properly initialized.
    */
   final public function __construct() {
     try {
       $this->rawBody = file_get_contents("php://input");
-      $this->contentType = strtolower($_SERVER['CONTENT_TYPE'] ?? '');
+      $this->contentType = strtolower(trim($_SERVER['CONTENT_TYPE'] ?? ''));
       $this->cookies = $_COOKIE ?? [];
       $this->method = $_SERVER['REQUEST_METHOD'] ?? null;
 
       $this->initializeUrl();
       $this->initializeHeaders();
-      $this->initializeBody();
 
       $this->secure = $this->isSSL();
       $this->ip = $this->determineClientIP();
+
+      $this->setup();
+
+      $this->initializeBody();
     } catch (\Throwable $e) {
-      throw new RouteRequestException("Request Failed", 400, $e);
+      throw new RouterRequestException("Request Failed", 400, $e);
     }
+  }
+
+  /**
+   * Method for extending PkRequest.
+   *
+   * This should must be implemented by any class extending PkRequest.
+   * It will be executed prior to initializing the body content to allow
+   * custom body parsers and additional method creation
+   *
+   * @return void
+   */
+  protected function setup() {
   }
 
   /**
@@ -145,7 +167,7 @@ class PkRequest {
    */
   final public function getHeader(string $key = null, $default = null) {
     if ($key === null) return $this->headers ?? [];
-    return $this->headers[$key] ?? $default;
+    return $this->headers[strtolower($key)] ?? $default;
   }
 
   /**
@@ -326,8 +348,19 @@ class PkRequest {
    * Initializes the request body based on the Content-Type.
    *
    * @throws \Exception If the JSON body content is invalid.
+   * @throws BodyParserException If there is an exception using a custom parser.
    */
   final protected function initializeBody() {
+
+    if (array_key_exists($this->contentType, $this->bodyParsers)) {
+      try {
+        $this->body = $this->bodyParsers[$this->contentType]($this->rawBody);
+        return;
+      } catch (\Throwable $e) {
+        throw new BodyParserException("Could not parse body for '{$this->contentType}'", null, $e);
+      }
+    }
+
     if (strpos($this->contentType, self::CONTENT_TYPE_JSON) !== false) {
       $json = json_decode($this->rawBody, true, JSON_THROW_ON_ERROR);
       if (!is_array($json)) {
@@ -340,8 +373,21 @@ class PkRequest {
       $this->body = $_POST;
       $this->files = $_FILES;
     } else {
-      $this->body = [];
+      $this->body = null;
     }
+  }
+
+
+  /**
+   * Adds additional body parsing methods for unsupported content types.
+   *
+   * @param string $contentType The Content-Type of the body
+   * @param callable $callback A function that accepts a string $body and returns a mixed $body
+   * @return void 
+   */
+
+  public function addBodyParser(string $contentType, callable $callback) {
+    $this->bodyParsers[$contentType] = $callback;
   }
 
   /**
