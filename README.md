@@ -1,8 +1,8 @@
 # PkRouter (Draft)
 
-PkRouter is a fast and robust router intended to be used for API creation in PHP. JSON in, JSON out. It has no dependencies
+PkRouter is a fast and robust modern PHP router intended to be used for API creation. It has no dependencies, and encourages an object oriented approach.
 
-PkRouter was created to fill the space between unopinionate routers, and _way too opinionated_ routers. I would like to express my appreciation for [AltoRouter](https://github.com/dannyvankooten/AltoRouter/), which inspired me to make my own.
+PkRouter was created to fill the space between unopinionated routers, and _way too opinionated_ routers. I would like to express my appreciation for [AltoRouter](https://github.com/dannyvankooten/AltoRouter/), which inspired me to make my own.
 
 ## Features
 
@@ -546,6 +546,6 @@ Count: 4
 
 ## License
 
-MIT License
+MIT License, see LICENSE.md
 
 Copyright (c) 2024 Pixel Karma, LLC <social+pkrouter@pixelkarma.com>
