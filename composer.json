@@ -1,8 +1,7 @@
 {
   "name": "pixelkarma/pkrouter",
-  "version": "1.0.0",
   "type": "library",
-  "description": "An easy PHP router for JSON APIs",
+  "description": "An extensible PHP router.",
   "keywords": [
     "pixelkarma",
     "pkrouter",
@@ -15,7 +14,7 @@
     {
       "name": "pixelkarma",
       "email": "social+pkrouter@pixelkarma.com",
-      "homepage": "http://pkrouter.pixelkarma.com",
+      "homepage": "https://www.pixelkarma.com",
       "role": "Developer"
     }
   ],

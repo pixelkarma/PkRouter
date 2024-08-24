@@ -1,8 +1,14 @@
 <?php
 
+/**
+ * Example Route Config.
+ * 
+ */
+
 namespace StorageExample\Router;
 
 use StorageExample\Router\Middleware\AuthorizationMiddleware;
+use StorageExample\Router\Middleware\LogEventMiddleware;
 use StorageExample\Router\Middleware\CounterMiddleware;
 
 use Pixelkarma\PkRouter\PkRoute;
@@ -11,13 +17,16 @@ use Pixelkarma\PkRouter\PkRoutesConfig;
 class MyRoutes extends PkRoutesConfig {
   public function routes(): array {
     $authorizationMiddleware = new AuthorizationMiddleware();
+    $logEventMiddleware = new LogEventMiddleware();
     $counterMiddleware = new CounterMiddleware();
 
-    // Example of executing an anonymous function as the callback
+    
     $this->addRoute(new PkRoute(
       name: "home",
       path: "/",
       methods: ["GET", "POST"],
+      
+      // Using an anonymous function as the callback
       callback: function ($router) {
         $router->response->sendRaw(
           "This is a raw response for / (root/home), Be sure to check the README.md!",
@@ -33,10 +42,12 @@ class MyRoutes extends PkRoutesConfig {
       name: "read",
       path: "/storage/",
       methods: ["GET"],
+
+      // Using a Controller Method function as the callback
       callback: "StorageExample\Controllers\StorageController@read",
       meta: [],
       after: [
-        $counterMiddleware,
+        $logEventMiddleware,
         $counterMiddleware,
         $counterMiddleware,
       ]
@@ -49,7 +60,7 @@ class MyRoutes extends PkRoutesConfig {
       callback: "StorageExample\Controllers\StorageController@read",
       meta: [],
       after: [
-        $counterMiddleware,
+        $logEventMiddleware,
         $counterMiddleware,
         $counterMiddleware,
       ]
@@ -67,7 +78,7 @@ class MyRoutes extends PkRoutesConfig {
         $authorizationMiddleware
       ],
       after: [
-        $counterMiddleware,
+        $logEventMiddleware,
       ]
     );
     // UPDATE (replace)
@@ -83,7 +94,7 @@ class MyRoutes extends PkRoutesConfig {
         $authorizationMiddleware
       ],
       after: [
-        $counterMiddleware,
+        $logEventMiddleware,
       ]
     );
     // UPDATE (patch)
@@ -99,7 +110,7 @@ class MyRoutes extends PkRoutesConfig {
         $authorizationMiddleware
       ],
       after: [
-        $counterMiddleware,
+        $logEventMiddleware,
       ]
     );
     // DELETE
@@ -113,7 +124,7 @@ class MyRoutes extends PkRoutesConfig {
         $authorizationMiddleware
       ],
       after: [
-        $counterMiddleware,
+        $logEventMiddleware,
       ]
     );
 

@@ -11,8 +11,14 @@ use Pixelkarma\PkRouter\PkResponse;
 class CustomResponse extends PkResponse {
 
   public function sendXml(array $data, int $code = 200): bool {
+
+    // Set the header to XML
     $this->setHeader('Content-Type', 'application/xml');
+
+    // Convert the array data to XML
     $payload = $this->arrayToXml($data);
+
+    // Use sendRaw to respond with XML
     return $this->sendRaw($payload, $code);
   }
 
@@ -34,9 +40,10 @@ class CustomResponse extends PkResponse {
       if (is_array($value)) {
         $xml .= "<$key>\n" . $this->arrayToXml($value, null, '') . "</$key>\n";
       } else {
+        // Otherwise, add the element to the XML string
+        
         // Convert bools to string
         $value = is_bool($value) ? ($value ? 'true' : 'false') : $value;
-        // Otherwise, add the element to the XML string
         $xml .= "<$key>" . htmlspecialchars($value) . "</$key>\n";
       }
     }

@@ -2,15 +2,14 @@
 
 PkRouter is a fast and robust modern PHP router intended to be used for API creation. It has no dependencies, and encourages an object oriented approach.
 
-PkRouter was created to fill the space between unopinionated routers, and _way too opinionated_ routers. I would like to express my appreciation for [AltoRouter](https://github.com/dannyvankooten/AltoRouter/), which inspired me to make my own.
-
 ## Features
 
 - Supports all HTTP methods, including custom ones.
 - Flexible middleware for pre- and post-route execution.
-- Extensible response class for handling more than just JSON.
+- Extensible request and response classes for handling custom payloads.
 - Supports both function and class method callbacks, ideal for MVC projects.
 - Efficient, robust regex-based routing.
+- Extensible parameter pattern validation.
 - Dynamic properties enable seamless data storage throughout the request lifecycle.
 - Custom exceptions enhance error handling and clarity.
 
@@ -241,17 +240,24 @@ See [PkRoute Methods](#pkroute-methods) for more information about `getParam()`
 ### Add additional match patterns
 
 By calling the static function _addMatchPattern_, you can add additional
-param types
+param types. This can be used at any point prior to matching a route.
+
+A common place to put this is in a Route Config file, as shown below
 
 ```php
-// Match 'AA-1234'  Two upper letters, a dash an a 4 digit number
+use Pixelkarma\PkRouter\PkRoute;
+use Pixelkarma\PkRouter\PkRoutesConfig;
 
-$pattern = "(/^[A-Z]{2}-\d{4}$/)";
-PkRoute::addMatchPattern("sn", $pattern)`
-
-/*
-  /path/AA-1234/ === /path/[sn:serialNumber]/
-*/
+class MyRoutes extends PkRoutesConfig {
+  public function routes(): array {
+    /**
+     *  Match 'Serial Number' 'AA-1234'
+     *  /path/AA-1234/ == /path/[sn:serialNumber]/
+     */
+    PkRoute::addMatchPattern("sn", "(/^[A-Z]{2}-\d{4}$/)");
+    /* add routes here */
+  }
+}
 ```
 
 ## Route Methods

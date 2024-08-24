@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * Example of a basic repository class for storing and 
+ * modifying JSON data. 
+ */
+
 namespace StorageExample\Models;
 
 class StorageRepository {
@@ -13,7 +18,7 @@ class StorageRepository {
     try {
       $jsonData = json_decode(file_get_contents(self::$storageFile), true, 512, JSON_THROW_ON_ERROR);
     } catch (\JsonException $e) {
-      throw new \Exception("Storage file is not a valid JSON file.", 500);
+      throw new \Exception("JSON file error: " . $e->getMessage(), 500);
     }
     $this->data = $jsonData;
   }
