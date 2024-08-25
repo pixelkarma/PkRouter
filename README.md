@@ -17,7 +17,9 @@ Please see the [Example](https://github.com/pixelkarma/PkRouter/tree/main/Exampl
 
 ## Installation
 
-Composer package soon.
+```
+composer require pixelkarma/pkrouter
+```
 
 ## Usage
 

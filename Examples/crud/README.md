@@ -96,7 +96,7 @@ curl -X "DELETE" "http://localhost:8080/storage/abc125/" -H 'Authorization: EXAM
 
 ## Bad Requests
 
-### Requesting a KEY that does not exist
+### Requesting an item that does not exist
 
 ```bash
 curl "http://localhost:8080/storage/invalid-key/"
