@@ -1,4 +1,4 @@
-# PkRouter (Draft)
+# PkRouter
 
 PkRouter is a fast and robust modern PHP router intended to be used for API creation. It has no dependencies, and encourages an object oriented approach.
 
@@ -361,51 +361,51 @@ $router->request->getHeader("user-agent", "Unknown");
 
 ```php
 // Returns key value or all `headers` with `getHeader('name')`
-$router->request->getHeader(string $key = null, $default = null)
+$router->request->getHeader(string $key = null, $default = null);
 
 // Returns key value or all `?query=string` with `getQuery('name')`
-$router->request->getQuery(string $key = null, $default = null)
+$router->request->getQuery(string $key = null, $default = null);
 
 // Returns key value or all `body content` with `getBody('name')`
-$router->request->getBody(string $key = null, $default = null)
+$router->request->getBody(string $key = null, $default = null);
 
 // Returns key value or all `cookies` with `getCookie('name')`
-$router->request->getCookie(string $key = null, $default = null)
+$router->request->getCookie(string $key = null, $default = null);
 
 // Returns key value or all `$_FILES` with `getFile('name')`
-$router->request->getFile(string $key = null, $default = null)
+$router->request->getFile(string $key = null, $default = null);
 
 // Returns a string like "GET" or "POST"
-$router->request->getMethod()
+$router->request->getMethod();
 
 // Returns true if the connection is SSL
-$router->request->isSecure()
+$router->request->isSecure();
 
 // Returns the hostname
-$router->request->getHost()
+$router->request->getHost();
 
 // Returns the requested path
-$router->request->getPath()
+$router->request->getPath();
 
 // Returns the Content-Type, usually `application/json`
-$router->request->getContentType()
+$router->request->getContentType();
 
 // Returns the RAW body of the request.
-$router->request->getRawBody()
+$router->request->getRawBody();
 
 // Returns "https" or "http"
-$router->request->getScheme()
+$router->request->getScheme();
 
 // Returns the port: 80, 443
-$router->request->getPort()
+$router->request->getPort();
 
 // Returns the `username` in http://username:password@hostname/path
 // !DANGER! This is insecure and depreciated. Use with caution.
-$router->request->getUser()
+$router->request->getUser();
 
 // Returns the `password` in http://username:password@hostname/path
 // !DANGER! This is insecure and depreciated. Use with caution.
-$router->request->getPass()
+$router->request->getPass();
 ```
 
 # Response (`PkResponse`)
