@@ -1,10 +1,21 @@
 # PkRouter C.R.U.D. Example
 
-This example explores all the features of PkRouter, but is not intended as production code.
-PkRouter does not implement any security features that would be required to make a system
-like this safe in the real world.
+This example explores all the features of PkRouter, but is not intended as production code. PkRouter does not implement any security features that would be required to make a system like this safe in the real world.
 
 _Please be sure `./Examples/crud/data/store.json` is writable_
+
+### This example covers
+
+* Extending PkRoutesConfig (MyRoutes.php)
+* Creating Middleware (./src/Middleware/)
+* Passing data between Middleware
+* Using Dynamic Properties
+* Extending PkRequest to accept XML (CustomRequest.php)
+* Extending PkResponse to send XML (CustomResponse.php)
+* Custom Log function (./public/index.php)
+* Using route specific 'meta' data 
+* Sending custom response headers
+* Listening for custom request headers
 
 ## How to run this example
 
