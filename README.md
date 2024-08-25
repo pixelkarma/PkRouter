@@ -133,7 +133,7 @@ $router->user = (object)[
 ];
 ```
 
-# Route Creation (`PkRoute`)
+# Route Creation
 
 ```php
 new PkRoute(
@@ -246,7 +246,7 @@ See [PkRoute Methods](#pkroute-methods) for more information about `getParam()`
 By calling the static function _addMatchPattern_, you can add additional
 param types. This can be used at any point prior to matching a route.
 
-A common place to put this is in a Route Config file, as shown below
+A common place to put this is in a [Route Config](#route-config) file, as shown below
 
 ```php
 use Pixelkarma\PkRouter\PkRoute;
@@ -291,7 +291,7 @@ $router->route->getPath()
 $router->route->getMethods()
 ```
 
-# Route Config (`PkRoutesConfig`)
+# Route Config
 
 `PkRoutesConfig` is an extensible class for setting up multiple Routes, and adding Middleware.
 
