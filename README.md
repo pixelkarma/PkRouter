@@ -2,6 +2,8 @@
 
 PkRouter is a fast and robust modern PHP router intended to be used for API creation. It has no dependencies, and encourages an object oriented approach.
 
+Please see the [Example](https://github.com/pixelkarma/PkRouter/tree/main/Examples/crud) to see in in action.
+
 ## Features
 
 - Supports all HTTP methods, including custom ones.
