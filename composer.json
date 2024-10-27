@@ -21,7 +21,6 @@
   "require": {
     "php": "~8.1"
   },
-  "require-dev": {},
   "autoload": {
     "psr-4": {
       "Pixelkarma\\PkRouter\\": "src/"
