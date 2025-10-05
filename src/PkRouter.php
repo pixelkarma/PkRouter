@@ -58,10 +58,10 @@ class PkRouter {
    * @throws RouterInitException If the router fails to initialize.
    */
   final public function __construct(
-    PkRoutesConfig $routes = null,
-    PkRequest $request = null,
-    PkResponse $response = null,
-    callable $logFunction = null
+    ?PkRoutesConfig $routes = null,
+    ?PkRequest $request = null,
+    ?PkResponse $response = null,
+    ?callable $logFunction = null
   ) {
     try {
       if ($logFunction !== null) self::$logFunction = $logFunction;
@@ -114,7 +114,7 @@ class PkRouter {
    * @return bool True if a matching route is found, otherwise false.
    * @throws RouteNotFoundException If no route matches the request.
    */
-  final public function match(string $method = null, string $path = null) {
+  final public function match(?string $method = null, ?string $path = null) {
     $method = $method !== null ? $method : $this->request->getMethod();
     $path = $path !== null ? $path : $this->request->getPath();
     foreach ($this->routes->getRoutes() as $route) {
@@ -213,7 +213,7 @@ class PkRouter {
    * @return bool True if the response is sent successfully, otherwise false.
    * @throws RouterResponseException If the router fails to send the response.
    */
-  public function respond(mixed $payload, int $code = null) {
+  public function respond(mixed $payload, ?int $code = null) {
     try {
       return $this->response->sendJson($payload, $code);
     } catch (\Throwable $e) {

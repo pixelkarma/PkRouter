@@ -72,7 +72,7 @@ class PkResponse {
    * @param mixed $default The default value to return if the header is not found.
    * @return mixed The header value or all headers as an array.
    */
-  final public function getHeader(string $key = null, $default = null) {
+  final public function getHeader(?string $key = null, $default = null) {
     if ($key === null) return $this->headers ?? [];
 
     return $this->headers[strtolower($key)] ?? $default;
@@ -86,7 +86,7 @@ class PkResponse {
    * @return bool True if the response was sent successfully, false otherwise.
    * @throws RouterResponseException If an error occurs while encoding or sending the response.
    */
-  final public function sendJson(array $payload, int $code = null): bool {
+  final public function sendJson(array $payload, ?int $code = null): bool {
     try {
       if ($code !== null) $this->setCode($code);
 
@@ -114,7 +114,7 @@ class PkResponse {
    * @return bool True if the response was sent successfully, throws otherwise.
    * @throws RouterResponseException If an error occurs while sending the response.
    */
-  final public function sendRaw($payload, int $code = null): bool {
+  final public function sendRaw($payload, ?int $code = null): bool {
     try {
       if ($code !== null) $this->setCode($code);
 

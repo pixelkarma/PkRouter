@@ -87,7 +87,7 @@ class PkRoute {
    * @throws RouteParameterException If any required route parameters are missing or invalid.
    */
   final public function __construct(
-    string $name = null,
+    ?string $name = null,
     array $methods,
     string $path,
     mixed $callback,
@@ -189,7 +189,7 @@ class PkRoute {
    * @param string|null $key The key of the metadata to retrieve (optional).
    * @return mixed The metadata value, or the entire metadata array if no key is provided.
    */
-  final public function getMeta(string $key = null) {
+  final public function getMeta(?string $key = null) {
     if ($key === null) return $this->meta;
     return $this->meta[$key] ?? null;
   }
@@ -200,7 +200,7 @@ class PkRoute {
    * @param string|null $key The key of the parameter to retrieve (optional).
    * @return mixed The parameter value, or the entire parameters array if no key is provided.
    */
-  final public function getParam(string $key = null) {
+  final public function getParam(?string $key = null) {
     if ($key == null) return $this->params;
     return $this->params[$key] ?? null;
   }

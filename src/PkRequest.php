@@ -165,7 +165,7 @@ class PkRequest {
    * @param mixed $default The default value to return if the header is not found.
    * @return mixed The header value or all headers as an array.
    */
-  final public function getHeader(string $key = null, $default = null) {
+  final public function getHeader(?string $key = null, $default = null) {
     if ($key === null) return $this->headers ?? [];
     return $this->headers[strtolower($key)] ?? $default;
   }
@@ -177,7 +177,7 @@ class PkRequest {
    * @param mixed $default The default value to return if the parameter is not found.
    * @return mixed The query parameter value or all query parameters as an array.
    */
-  final public function getQuery(string $key = null, $default = null) {
+  final public function getQuery(?string $key = null, $default = null) {
     if ($key === null) return $this->query ?? [];
     return $this->query[$key] ?? $default;
   }
@@ -189,7 +189,7 @@ class PkRequest {
    * @param mixed $default The default value to return if the parameter is not found.
    * @return mixed The body parameter value or all body parameters as an array.
    */
-  final public function getBody(string $key = null, $default = null) {
+  final public function getBody(?string $key = null, $default = null) {
     if ($key === null) return $this->body ?? [];
     return $this->body[$key] ?? $default;
   }
@@ -201,7 +201,7 @@ class PkRequest {
    * @param mixed $default The default value to return if the cookie is not found.
    * @return mixed The cookie value or all cookies as an array.
    */
-  final public function getCookie(string $key = null, $default = null) {
+  final public function getCookie(?string $key = null, $default = null) {
     if ($key === null) return $this->cookies ?? [];
     return $this->cookies[$key] ?? $default;
   }
@@ -213,7 +213,7 @@ class PkRequest {
    * @param mixed $default The default value to return if the file is not found.
    * @return mixed The file value or all files as an array.
    */
-  final public function getFile(string $key = null, $default = null) {
+  final public function getFile(?string $key = null, $default = null) {
     if ($key == null) return ($this->files ?? []);
     return ($this->files[$key] ?? $default);
   }

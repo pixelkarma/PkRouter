@@ -41,7 +41,7 @@ abstract class PkRoutesConfig {
     $this->routeList[$routeName] = $route;
   }
 
-  final public function getRoutes(string $key = null) {
+  final public function getRoutes(?string $key = null) {
     if ($key === null) return $this->routeList;
     return $this->routeList[$key] ?? false;
   }
