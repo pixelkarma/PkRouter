@@ -1,5 +1,7 @@
 # PkRouter
 
+**Note: This project is no longer maintained and will not receive updates. While overengineering can be enjoyable, I’ve decided that PHP is better suited to simpler approaches: https://github.com/pixelkarma/cascadephp**
+
 PkRouter is a fast and robust modern PHP router intended to be used for API creation. It has no dependencies, and encourages an object oriented approach.
 
 Please see the [Example](https://github.com/pixelkarma/PkRouter/tree/main/Examples/crud) to see in in action.
